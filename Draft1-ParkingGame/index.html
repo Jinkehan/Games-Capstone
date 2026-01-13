@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking Game - Draft 1</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>Parking Game</h1>
+        <div class="game-info">
+            <div class="controls-info">
+                <p><strong>Controls:</strong></p>
+                <p>↑ / W - Move Forward</p>
+                <p>← / A - Turn Left (at intersections)</p>
+                <p>→ / D - Turn Right (at intersections)</p>
+                <p>P - Park (when next to a space)</p>
+            </div>
+        </div>
+        <canvas id="gameCanvas" tabindex="0"></canvas>
+        <div id="parkButton" class="park-button hidden">PARK (P)</div>
+    </div>
+    
+    <!-- Win Modal -->
+    <div id="winModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>🎉 You Win! 🎉</h2>
+            <p>Congratulations! You successfully parked your car!</p>
+            <button id="restartButton" class="restart-button">Restart Game</button>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
