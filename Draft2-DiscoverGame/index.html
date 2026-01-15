@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discover Game - Draft 2</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>Discover Game - Level <span id="levelDisplay">1</span></h1>
+        <div class="game-info">
+            <div class="controls-info">
+                <p>Reach the endpoint on the right to win.</p>
+                <p id="levelInstructions">Hint: Utilize ← → ↑</p>
+            </div>
+            <div class="level-selector">
+                <button id="level1Button" class="level-button">Level 1</button>
+                <button id="level2Button" class="level-button">Level 2</button>
+                <button id="level3Button" class="level-button">Level 3</button>
+            </div>
+        </div>
+        <canvas id="gameCanvas" tabindex="0"></canvas>
+        <div class="objective">
+            <p>Reach the endpoint on the right to win!</p>
+        </div>
+    </div>
+    
+    <!-- Win Modal -->
+    <div id="winModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>🎉 You Win! 🎉</h2>
+            <p>Congratulations! You figured out the rules and reached the endpoint!</p>
+            <button id="restartButton" class="restart-button">Play Again</button>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
