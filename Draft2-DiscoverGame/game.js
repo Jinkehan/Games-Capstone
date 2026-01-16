@@ -465,14 +465,14 @@ function handleInput() {
             newX += gameState.player.speed;
         }
     } else if (gameState.currentLevel === 3) {
-        // Level 3: use P (left), C (right)
+        // Level 3: use P (left), C+O (right - both keys required)
         // 'p' = move left
         if (gameState.keys['p'] || gameState.keys['P']) {
             newX -= gameState.player.speed;
         }
         
-        // 'c' = move right
-        if (gameState.keys['c'] || gameState.keys['C']) {
+        // 'c' AND 'o' = move right (both keys must be pressed)
+        if ((gameState.keys['c'] || gameState.keys['C']) && (gameState.keys['o'] || gameState.keys['O'])) {
             newX += gameState.player.speed;
         }
     }
@@ -927,7 +927,7 @@ function updateUI() {
         level2Button.classList.add('active');
         if (level3Button) level3Button.classList.remove('active');
     } else if (gameState.currentLevel === 3) {
-        levelInstructions.textContent = 'Hint: Utilize P, C, S';
+        levelInstructions.textContent = 'Hint: Utilize P, C+O, S';
         level1Button.classList.remove('active');
         level2Button.classList.remove('active');
         if (level3Button) level3Button.classList.add('active');
