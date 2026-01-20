@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Gate - Puzzle Platformer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>Color Gate</h1>
+        <div class="controls-info">
+            <p><strong>Controls:</strong> A/D or Arrow Keys = Move | W/Up = Jump | R = Restart</p>
+            <p><strong>⚠️ Color changes automatically: Blue lasts 1s | Red lasts 0.5s!</strong></p>
+        </div>
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        <div class="level-info">
+            <p id="levelText">Level 1 - Tutorial</p>
+            <p id="timerText">Time Left: <span id="levelTimer">5s</span></p>
+        </div>
+    </div>
+
+    <!-- Level Complete Popup -->
+    <div id="levelCompletePopup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>🎉 Congratulations!</h2>
+            <p id="popupMessage">Level Complete!</p>
+            <button id="nextLevelBtn" class="popup-button">Next Level</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
