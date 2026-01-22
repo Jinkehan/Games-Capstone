@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Did you just move?</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="ui">
+            <div id="timer">TIME: <span id="timeValue">20</span>s</div>
+            <div id="position">POSITION: <span id="positionValue">9</span></div>
+            <div id="dangerContainer">
+                <div id="dangerLabel">DANGER</div>
+                <div id="dangerBar">
+                    <div id="dangerFill"></div>
+                </div>
+            </div>
+            <div id="pretendContainer">
+                <div id="pretendLabel">PRETEND</div>
+                <div id="pretendBar">
+                    <div id="pretendFill"></div>
+                </div>
+            </div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="startScreen">
+            <div id="startTitle">DON'T GET CAUGHT CUTTING IN LINE</div>
+            <div id="startInstructions">
+                <p><strong>SETTING</strong>: You are desperate for the toilet. There's a long line. Don't get caught cutting.</p>
+                <p><strong>GOAL</strong>: Reach the front of the line (POSITION 0) in 20 seconds without filling the DANGER bar.</p>
+                <p><strong>CONTROLS</strong>:</p>
+                <ul>
+                    <li><strong>W</strong> – cut forward by one slot</li>
+                    <li><strong>S</strong> – pretend to be chill (reduces danger, 3s cooldown)</li>
+                    <li><strong>R</strong> – restart after win / fail</li>
+                </ul>
+                <p><strong>NPC STATES</strong> (only the one DIRECTLY in front of you matters for danger):</p>
+                <ul>
+                    <li><strong>GRAY</strong> – chill, safe to move</li>
+                    <li><strong>YELLOW</strong> – watching you, danger goes up a bit if you move</li>
+                    <li><strong>RED</strong> – super suspicious, danger jumps a lot if you move</li>
+                </ul>
+                <p><strong>PRO TIP</strong>: Wait for gray, then cut. Use S strategically to reduce danger (but it has a cooldown!).</p>
+                <p><strong>WARNING</strong>: In the final 5 seconds, NPCs become more alert and danger decays slower!</p>
+            </div>
+            <div id="startHint">Press SPACE to start</div>
+        </div>
+        <div id="gameOver" class="hidden">
+            <div id="gameOverText">Did you just move?</div>
+            <div id="gameOverSubtext"></div>
+            <div id="restartBtn">Press R to restart</div>
+        </div>
+        <div id="winScreen" class="hidden">
+            <div id="winText">YOU WIN!</div>
+            <div id="winSubtext">(but at what cost?)</div>
+            <div id="restartBtnWin">Press R to restart</div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
+

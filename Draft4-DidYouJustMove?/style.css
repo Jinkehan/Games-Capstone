@@ -1,0 +1,240 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Comic Sans MS', 'Arial', sans-serif;
+    background: #1a1a1a;
+    color: #fff;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#gameContainer {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    font-family: 'Impact', 'Arial Black', sans-serif;
+}
+
+#timer, #position {
+    margin-bottom: 10px;
+    color: #ffeb3b;
+    text-transform: uppercase;
+}
+
+#dangerContainer {
+    margin-top: 20px;
+}
+
+#dangerLabel {
+    font-size: 18px;
+    color: #ff4444;
+    margin-bottom: 5px;
+    font-family: 'Impact', 'Arial Black', sans-serif;
+}
+
+#dangerBar {
+    width: 300px;
+    height: 30px;
+    background: #333;
+    border: 3px solid #ff4444;
+    position: relative;
+    overflow: hidden;
+}
+
+#dangerFill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff4444, #ff0000);
+    transition: width 0.1s linear;
+}
+
+#pretendContainer {
+    margin-top: 20px;
+}
+
+#pretendLabel {
+    font-size: 18px;
+    color: #44ff44;
+    margin-bottom: 5px;
+    font-family: 'Impact', 'Arial Black', sans-serif;
+}
+
+#pretendBar {
+    width: 300px;
+    height: 30px;
+    background: #333;
+    border: 3px solid #44ff44;
+    position: relative;
+    overflow: hidden;
+}
+
+#pretendFill {
+    height: 100%;
+    width: 100%;
+    background: #666;
+    transition: width 0.1s linear, background 0.1s linear;
+}
+
+#pretendFill.ready {
+    background: linear-gradient(90deg, #44ff44, #00ff00);
+}
+
+#gameCanvas {
+    border: 4px solid #666;
+    background: #2a2a2a;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+#gameOver, #winScreen, #startScreen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 40px 60px;
+    border: 5px solid #ff0000;
+    text-align: center;
+    font-size: 48px;
+    font-weight: bold;
+    color: #ff0000;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+    font-family: 'Impact', 'Arial Black', sans-serif;
+}
+
+#winScreen {
+    border-color: #00ff00;
+    color: #00ff00;
+}
+
+#gameOverText {
+    margin-bottom: 10px;
+    animation: shake 0.5s infinite;
+    white-space: pre-line;
+}
+
+#gameOverSubtext {
+    font-size: 28px;
+    color: #ffaaaa;
+    margin-bottom: 20px;
+}
+
+#winText {
+    font-size: 64px;
+    margin-bottom: 10px;
+    color: #00ff00;
+}
+
+#winSubtext {
+    font-size: 24px;
+    color: #aaa;
+    margin-bottom: 20px;
+}
+
+#restartBtn, #restartBtnWin {
+    font-size: 24px;
+    color: #fff;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#startScreen {
+    border-color: #ffffff;
+    background: rgba(0, 0, 0, 0.9) !important;
+    color: #ffffff;
+    font-size: 24px;
+}
+
+#startTitle {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+#startInstructions {
+    text-align: left;
+    max-width: 600px;
+    margin: 0 auto;
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+#startInstructions ul {
+    margin-left: 20px;
+    margin-bottom: 10px;
+}
+
+#startInstructions p {
+    margin-bottom: 8px;
+}
+
+#startHint {
+    margin-top: 20px;
+    font-size: 22px;
+    color: #ffeb3b;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translate(0, 0); }
+    10%, 30%, 50%, 70%, 90% { transform: translate(-2px, -2px); }
+    20%, 40%, 60%, 80% { transform: translate(2px, 2px); }
+}
+
+.cough-popup {
+    position: absolute;
+    color: #fff;
+    font-size: 20px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 50;
+    animation: fadeUp 1s ease-out forwards;
+}
+
+@keyframes fadeUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+}
+
+.sorry-popup {
+    position: absolute;
+    color: #ffeb3b;
+    font-size: 24px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 50;
+    animation: fadeUp 2s ease-out forwards;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
