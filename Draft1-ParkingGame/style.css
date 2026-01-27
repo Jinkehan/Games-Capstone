@@ -26,7 +26,15 @@ body {
 h1 {
     text-align: center;
     color: #333;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    font-style: italic;
 }
 
 .game-info {

@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet the Cat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Keyframe Animations */
+        @keyframes tailSwishSlow {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        @keyframes tailSwishFast {
+            0%, 100% { transform: rotate(-35deg); }
+            50% { transform: rotate(35deg); }
+        }
+
+        @keyframes pawSwipe {
+            0% {
+                opacity: 0;
+                transform: rotate(-45deg) scale(0) translate(0, 0);
+            }
+            50% {
+                opacity: 1;
+                transform: rotate(-45deg) scale(1.5) translate(50px, -20px);
+            }
+            100% {
+                opacity: 0;
+                transform: rotate(-45deg) scale(1) translate(80px, -40px);
+            }
+        }
+
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0, 0); }
+            10%, 30%, 50%, 70%, 90% { transform: translate(-10px, 0); }
+            20%, 40%, 60%, 80% { transform: translate(10px, 0); }
+        }
+
+        /* State-based animations applied via root classes */
+        body.state-calm #tail {
+            animation: tailSwishSlow 4s ease-in-out infinite;
+        }
+
+        body.state-warning #tail {
+            animation: tailSwishFast 1s ease-in-out infinite;
+        }
+
+        body.state-attack #tail {
+            animation: tailSwishFast 0.3s ease-in-out infinite;
+        }
+
+        body.attack-active {
+            animation: screenShake 0.5s;
+        }
+
+        body.attack-active #paw {
+            animation: pawSwipe 0.5s;
+        }
+
+        #flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(255, 0, 0, 0);
+            pointer-events: none;
+            transition: background 0.1s;
+            z-index: 1000;
+        }
+
+        #flash.active {
+            background: rgba(255, 0, 0, 0.5);
+        }
+
+        #title {
+            font-size: 48px;
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        #message {
+            font-size: 24px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            min-height: 32px;
+        }
+
+        #timer-display {
+            position: fixed;
+            top: 30px;
+            right: 40px;
+            font-size: 32px;
+            color: #ffd93d;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+            z-index: 100;
+        }
+
+        #goals {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            z-index: 100;
+        }
+
+        .goal-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 3px solid white;
+            background: transparent;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .goal-dot.filled {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        #cat-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.1s ease-out;
+        }
+
+        #cat-container.stunned {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        #cat {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 50px auto;
+        }
+
+        #cat-body {
+            position: absolute;
+            width: 200px;
+            height: 150px;
+            background: #ff9a3c;
+            border-radius: 50% 50% 40% 40%;
+            top: 50px;
+            left: 0;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .ear {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            border-bottom: 60px solid #ff9a3c;
+            top: 30px;
+            transform-origin: bottom center;
+            transition: transform 0.3s;
+        }
+
+        #ear-left {
+            left: 30px;
+        }
+
+        #ear-right {
+            right: 30px;
+        }
+
+        /* Ear rotation states */
+        body.state-calm .ear {
+            transform: rotate(0deg);
+        }
+
+        body.state-warning #ear-left {
+            transform: rotate(-15deg);
+        }
+
+        body.state-warning #ear-right {
+            transform: rotate(15deg);
+        }
+
+        body.state-attack #ear-left {
+            transform: rotate(-30deg);
+        }
+
+        body.state-attack #ear-right {
+            transform: rotate(30deg);
+        }
+
+        .eye {
+            position: absolute;
+            background: #2c3e50;
+            border-radius: 50%;
+            top: 100px;
+            transition: all 0.3s;
+        }
+
+        #eye-left {
+            left: 50px;
+        }
+
+        #eye-right {
+            right: 50px;
+        }
+
+        /* Eye states */
+        body.state-calm .eye {
+            width: 18px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        body.state-warning .eye {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+        }
+
+        body.state-attack .eye {
+            width: 8px;
+            height: 30px;
+            border-radius: 4px;
+        }
+
+        #nose {
+            position: absolute;
+            width: 15px;
+            height: 10px;
+            background: #d67128;
+            border-radius: 50%;
+            top: 120px;
+            left: 92px;
+        }
+
+        #tail {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 12px solid #ff9a3c;
+            border-color: transparent #ff9a3c transparent transparent;
+            border-radius: 50%;
+            top: 120px;
+            left: -60px;
+            transform-origin: right center;
+        }
+
+        #paw {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #ff9a3c;
+            border-radius: 50% 50% 50% 0;
+            top: 150px;
+            left: 180px;
+            opacity: 0;
+            transform: rotate(-45deg) scale(0);
+            z-index: 100;
+        }
+
+        #restart-btn {
+            margin-top: 30px;
+            padding: 15px 30px;
+            font-size: 20px;
+            font-family: 'Courier New', monospace;
+            background: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: none;
+        }
+
+        #restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        #restart-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #restart-btn.show {
+            display: block;
+        }
+    </style>
+</head>
+<body class="state-calm">
+    <div id="flash"></div>
+    <div id="timer-display">
+        <span id="timer-count">30</span>s
+    </div>
+    <div id="title">Pet the Cat</div>
+    <div id="goals">
+        <div class="goal-dot" id="goal1"></div>
+        <div class="goal-dot" id="goal2"></div>
+        <div class="goal-dot" id="goal3"></div>
+    </div>
+    <div id="message">Pet the cat, but stop before it attacks. Complete 3 Good Stops.</div>
+    
+    <div id="cat-container">
+        <div id="cat">
+            <div id="ear-left" class="ear"></div>
+            <div id="ear-right" class="ear"></div>
+            <div id="cat-body"></div>
+            <div id="eye-left" class="eye"></div>
+            <div id="eye-right" class="eye"></div>
+            <div id="nose"></div>
+            <div id="tail"></div>
+            <div id="paw"></div>
+        </div>
+    </div>
+
+    <button id="restart-btn">Restart</button>
+
+    <script>
+        // Game state
+        let tension = 0;
+        let goodStops = 0;
+        let isStunned = false;
+        let gameTime = 0;
+        let gameStarted = false;
+        let gameRunning = true;
+        let lastTime = Date.now();
+        let hasAttacked = false;
+        let lastState = 'calm';
+        
+        // Combo system
+        let combo = 0;
+        let lastPetTime = 0;
+        let stopTime = 0; // When player stopped (last pet + 0.9s)
+        let isStopped = false;
+        let stopObservationStart = 0;
+        
+        // Good Stop tracking
+        let currentCombo = 0;
+        let warningTouchesInCombo = 0;
+        let enteredWarningInCombo = false;
+        let wasInWarning = false;
+        let isInWarningState = false; // Track if currently in WARNING state
+        let achievedGoodStopInWarning = false; // Track if Good Stop was achieved after entering WARNING
+        
+        // Guidance (first 3 warnings)
+        let warningCount = 0;
+        let goodStopCount = 0;
+
+        // Constants
+        const GAME_DURATION = 30;
+        const TENSION_BASE = 8; // base tension per click
+        const TENSION_COOLDOWN = 15; // per second when not petting
+        const STUN_DURATION = 1; // 1 second stun after attack
+        const GOOD_STOPS_REQUIRED = 3;
+        
+        // Good Stop requirements
+        const MIN_COMBO_FOR_GOOD_STOP = 6;
+        const MIN_WARNING_TOUCHES = 2;
+        const STOP_WINDOW = 0.9; // seconds without petting = stop
+        const OBSERVATION_WINDOW = 1.2; // seconds to observe if tension drops
+        const CALM_THRESHOLD = 45; // tension must drop below this for Good Stop
+
+        // DOM elements
+        const cat = document.getElementById('cat');
+        const catContainer = document.getElementById('cat-container');
+        const message = document.getElementById('message');
+        const restartBtn = document.getElementById('restart-btn');
+        const flash = document.getElementById('flash');
+        const paw = document.getElementById('paw');
+        const body = document.body;
+        const timerCount = document.getElementById('timer-count');
+        const goalDots = [
+            document.getElementById('goal1'),
+            document.getElementById('goal2'),
+            document.getElementById('goal3')
+        ];
+
+        // Audio context for sound effects
+        let audioContext = null;
+        
+        // Initialize audio context (requires user interaction)
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // Sound effect functions using Web Audio API
+        function playSound(frequency, duration, type = 'sine', volume = 0.3) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        // Specific sound effects
+        function playPetSound() {
+            // Soft click/pet sound
+            playSound(400, 0.1, 'sine', 0.2);
+        }
+
+        function playWarningSound() {
+            // Rising tension sound
+            playSound(300, 0.15, 'sine', 0.25);
+            setTimeout(() => playSound(350, 0.15, 'sine', 0.2), 50);
+        }
+
+        function playAttackSound() {
+            // Harsh attack sound
+            playSound(150, 0.2, 'sawtooth', 0.5);
+            setTimeout(() => playSound(200, 0.15, 'sawtooth', 0.4), 100);
+        }
+
+        function playGoodStopSound() {
+            // Pleasant success sound
+            playSound(523, 0.15, 'sine', 0.3); // C
+            setTimeout(() => playSound(659, 0.15, 'sine', 0.3), 100); // E
+            setTimeout(() => playSound(784, 0.2, 'sine', 0.3), 200); // G
+        }
+
+        // Click event (pet cat)
+        catContainer.addEventListener('click', (e) => {
+            if (!isStunned && gameRunning) {
+                // Initialize audio on first interaction
+                if (!audioContext) {
+                    initAudio();
+                }
+                petCat();
+            }
+        });
+
+        // Restart button
+        restartBtn.addEventListener('click', () => {
+            // Initialize audio on first interaction
+            if (!audioContext) {
+                initAudio();
+            }
+            resetGame();
+        });
+
+        function petCat() {
+            // Start the game on first click
+            if (!gameStarted) {
+                gameStarted = true;
+                gameTime = 0;
+                lastTime = Date.now();
+                message.textContent = '';
+            }
+
+            // Cancel stop if player pets again
+            if (isStopped) {
+                isStopped = false;
+                stopTime = 0;
+                stopObservationStart = 0;
+                // Continue combo
+                combo = currentCombo;
+            }
+
+            // Update combo
+            combo++;
+            currentCombo = combo;
+            lastPetTime = gameTime;
+
+            // Calculate tension increase: base + combo bonus
+            const comboBonus = Math.floor(combo / 3);
+            const tensionIncrease = TENSION_BASE + comboBonus;
+            tension += tensionIncrease;
+            tension = Math.max(0, Math.min(100, tension));
+
+            // Track if we entered WARNING in this combo
+            const currentState = getState();
+            if (currentState === 'warning') {
+                if (!enteredWarningInCombo) {
+                    enteredWarningInCombo = true;
+                }
+                warningTouchesInCombo++;
+                wasInWarning = true;
+            }
+
+            // Check for immediate attack
+            if (currentState === 'attack' && !hasAttacked && !isStunned) {
+                triggerAttack();
+            }
+
+            // Trigger pet animation (visual feedback)
+            catContainer.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                catContainer.style.transform = 'scale(1)';
+            }, 100);
+
+            // Play pet sound
+            playPetSound();
+        }
+
+
+        function updateDisplay() {
+            const timeLeft = Math.max(0, Math.ceil(GAME_DURATION - gameTime));
+            timerCount.textContent = timeLeft;
+            
+            // Update goal dots
+            for (let i = 0; i < goalDots.length; i++) {
+                if (i < goodStops) {
+                    goalDots[i].classList.add('filled');
+                } else {
+                    goalDots[i].classList.remove('filled');
+                }
+            }
+        }
+
+        function resetGame() {
+            // Reset all game state
+            tension = 0;
+            goodStops = 0;
+            isStunned = false;
+            gameTime = 0;
+            gameStarted = false;
+            gameRunning = true;
+            lastTime = Date.now();
+            hasAttacked = false;
+            lastState = 'calm';
+            
+            // Reset combo system
+            combo = 0;
+            currentCombo = 0;
+            lastPetTime = 0;
+            stopTime = 0;
+            isStopped = false;
+            stopObservationStart = 0;
+            
+            // Reset Good Stop tracking
+            warningTouchesInCombo = 0;
+            enteredWarningInCombo = false;
+            wasInWarning = false;
+            isInWarningState = false;
+            achievedGoodStopInWarning = false;
+            
+            // Reset guidance
+            warningCount = 0;
+            goodStopCount = 0;
+            
+            // Reset UI
+            message.textContent = 'Pet the cat, but stop before it attacks. Complete 3 Good Stops.';
+            restartBtn.classList.remove('show');
+            catContainer.classList.remove('stunned');
+            body.classList.remove('attack-active');
+            catContainer.style.transform = 'scale(1)';
+            
+            // Reset timer display to 30
+            timerCount.textContent = GAME_DURATION;
+            
+            // Update displays and cat state
+            updateDisplay();
+            updateCatState();
+
+            // Restart the loop if it was stopped after a game end
+            requestAnimationFrame(gameLoop);
+        }
+
+        function getState() {
+            if (tension >= 80) return 'attack';
+            if (tension >= 50) return 'warning';
+            return 'calm';
+        }
+
+        function updateCatState() {
+            const state = getState();
+            // Remove all state classes
+            body.classList.remove('state-calm', 'state-warning', 'state-attack');
+            // Add current state class
+            body.classList.add(`state-${state}`);
+        }
+
+        function triggerAttack() {
+            hasAttacked = true;
+            gameRunning = false;
+
+            // Play attack sound
+            playAttackSound();
+
+            // Visual effects - trigger attack animations via root class
+            body.classList.add('attack-active');
+            flash.classList.add('active');
+
+            // Stun player
+            isStunned = true;
+            catContainer.classList.add('stunned');
+
+            // Remove visual effects
+            setTimeout(() => {
+                body.classList.remove('attack-active');
+                flash.classList.remove('active');
+                updateCatState();
+            }, 500);
+
+            // Game over immediately after attack
+            setTimeout(() => {
+                endGame('attack');
+            }, 500);
+        }
+
+        function endGame(reason) {
+            gameRunning = false;
+            
+            // Determine ending based on reason
+            let endingMessage = '';
+            if (reason === 'success') {
+                // Success ending - completed 3 good stops
+                endingMessage = 'Success! You learned when to stop.';
+            } else if (reason === 'attack') {
+                // Failure ending - got attacked
+                endingMessage = 'Not every touch is welcome.';
+            } else {
+                // Neutral ending (time ran out)
+                endingMessage = `Time's up. You stopped ${goodStops}/3 times.`;
+            }
+            
+            message.textContent = endingMessage;
+            restartBtn.classList.add('show');
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            const currentTime = Date.now();
+            const deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+
+            // Only progress game time after first click
+            if (gameStarted) {
+                gameTime += deltaTime;
+
+                // Check if game is over (time limit)
+                if (gameTime >= GAME_DURATION) {
+                    endGame('timeout');
+                    return;
+                }
+
+                // Check for successful completion (3 good stops)
+                if (goodStops >= GOOD_STOPS_REQUIRED) {
+                    endGame('success');
+                    return;
+                }
+            }
+
+            // Always update display (even if game hasn't started)
+            updateDisplay();
+
+            // Only process game mechanics after game has started
+            if (gameStarted) {
+                // Handle tension cooldown
+                if (!isStunned) {
+                    tension -= TENSION_COOLDOWN * deltaTime;
+                    tension = Math.max(0, Math.min(100, tension));
+                }
+
+                // Check for stop (0.9 seconds without petting)
+                if (!isStopped && combo > 0 && (gameTime - lastPetTime) >= STOP_WINDOW) {
+                    isStopped = true;
+                    stopTime = gameTime;
+                    stopObservationStart = gameTime;
+                }
+
+                // Track state changes
+                const currentState = getState();
+                
+                // Track WARNING entry
+                if (currentState === 'warning' && lastState !== 'warning') {
+                    warningCount++;
+                    wasInWarning = true;
+                    isInWarningState = true;
+                    achievedGoodStopInWarning = false; // Reset when entering WARNING
+                    // Play warning sound
+                    playWarningSound();
+                }
+
+                // Handle Good Stop observation period (check this BEFORE leaving WARNING check)
+                if (isStopped && stopObservationStart > 0) {
+                    const observationTime = gameTime - stopObservationStart;
+                    
+                    // Check if tension dropped to CALM
+                    if (currentState === 'calm' && tension < CALM_THRESHOLD) {
+                        // Check Good Stop conditions
+                        const validCombo = currentCombo >= MIN_COMBO_FOR_GOOD_STOP;
+                        const validWarning = enteredWarningInCombo && warningTouchesInCombo >= MIN_WARNING_TOUCHES;
+                        const noAttack = !hasAttacked;
+                        
+                        if (validCombo && validWarning && noAttack) {
+                            // Good Stop success!
+                            goodStops++;
+                            goodStopCount++;
+                            updateDisplay();
+                            
+                            // Mark that Good Stop was achieved (before leaving WARNING check)
+                            achievedGoodStopInWarning = true;
+                            
+                            // Play success sound
+                            playGoodStopSound();
+                            
+                            // Show success message
+                            message.textContent = 'Good stop.';
+                            setTimeout(() => {
+                                if (message.textContent === 'Good stop.') {
+                                    message.textContent = '';
+                                }
+                            }, 2000);
+                            
+                            // Reset combo tracking
+                            combo = 0;
+                            currentCombo = 0;
+                            warningTouchesInCombo = 0;
+                            enteredWarningInCombo = false;
+                        }
+                        
+                        // Reset stop tracking
+                        isStopped = false;
+                        stopTime = 0;
+                        stopObservationStart = 0;
+                        currentCombo = 0;
+                        warningTouchesInCombo = 0;
+                        enteredWarningInCombo = false;
+                    } else if (observationTime > OBSERVATION_WINDOW) {
+                        // Observation window expired - check if should show "Too gentle"
+                        const meetsGoodStopRequirements = currentCombo >= MIN_COMBO_FOR_GOOD_STOP && 
+                                                           enteredWarningInCombo && 
+                                                           warningTouchesInCombo >= MIN_WARNING_TOUCHES;
+                        
+                        // If observation expired without success and was in WARNING, show "Too gentle"
+                        if (isInWarningState && !achievedGoodStopInWarning && meetsGoodStopRequirements) {
+                            // Had requirements but observation expired without success
+                            message.textContent = 'Too gentle.';
+                            setTimeout(() => {
+                                if (message.textContent === 'Too gentle.') {
+                                    message.textContent = '';
+                                }
+                            }, 2000);
+                        }
+                        
+                        // Reset observation period
+                        isStopped = false;
+                        stopTime = 0;
+                        stopObservationStart = 0;
+                        combo = 0;
+                        currentCombo = 0;
+                        warningTouchesInCombo = 0;
+                        enteredWarningInCombo = false;
+                        isInWarningState = false;
+                    }
+                }
+
+                // Reset combo if tension fully cools down
+                if (tension === 0 && combo > 0) {
+                    combo = 0;
+                    currentCombo = 0;
+                    warningTouchesInCombo = 0;
+                    enteredWarningInCombo = false;
+                }
+                
+                // Track leaving WARNING state (without Good Stop) - check AFTER Good Stop evaluation
+                // Only show "Too gentle" if player left WARNING without meeting Good Stop requirements
+                // AND not in observation period (wait for observation period to end)
+                if (isInWarningState && currentState !== 'warning' && !achievedGoodStopInWarning) {
+                    // Check if player meets Good Stop requirements
+                    const meetsGoodStopRequirements = currentCombo >= MIN_COMBO_FOR_GOOD_STOP && 
+                                                       enteredWarningInCombo && 
+                                                       warningTouchesInCombo >= MIN_WARNING_TOUCHES;
+                    
+                    // Only show "Too gentle" if:
+                    // 1. Not in observation period (already stopped and waiting), AND
+                    // 2. Doesn't meet requirements (if meets requirements, wait for observation period)
+                    if (!isStopped && !meetsGoodStopRequirements) {
+                        // Left WARNING without meeting requirements and not in observation period
+                        message.textContent = 'Too gentle.';
+                        setTimeout(() => {
+                            if (message.textContent === 'Too gentle.') {
+                                message.textContent = '';
+                            }
+                        }, 2000);
+                        isInWarningState = false;
+                    }
+                    // If in observation period or meets requirements, keep isInWarningState true
+                    // to check later when observation period ends
+                } else if (currentState !== 'warning' && !isStopped) {
+                    // Reset flag when not in WARNING and not observing
+                    isInWarningState = false;
+                }
+                
+                // Check for attack
+                if (currentState === 'attack' && !hasAttacked && !isStunned) {
+                    triggerAttack();
+                } else if (currentState !== 'attack') {
+                    hasAttacked = false;
+                }
+                
+                lastState = currentState;
+
+                // Update state
+                updateCatState();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game
+        gameLoop();
+    </script>
+</body>
+</html>
+

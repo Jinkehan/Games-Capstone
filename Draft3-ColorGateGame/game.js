@@ -239,7 +239,7 @@ function initLevels() {
         5 // 5 seconds time limit
     ));
 
-    // Level 3 - HARD: Multiple gates with tight timing (5 seconds)
+    // Level 3 - HARD: Multiple gates with tight timing (10 seconds)
     // Strategic spacing: gates 3-4 are far apart to force timing challenge
     levels.push(new Level(
         "Level 3 - HARD CHALLENGE",
@@ -253,7 +253,7 @@ function initLevels() {
             new Gate(690, 'blue')    // Gate 6 - blue (changed from red)
         ],
         750,
-        5 // 5 seconds time limit
+        10 // 10 seconds time limit
     ));
 }
 
