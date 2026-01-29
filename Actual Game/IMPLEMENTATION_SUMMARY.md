@@ -1,7 +1,7 @@
 # Implementation Summary: Maze Runner First Level
 
 ## Overview
-Successfully implemented a maze runner game with automatic forward movement, lane-based horizontal control, and 90-degree turning mechanics at intersections.
+Successfully implemented a maze runner game with automatic forward movement, 90-degree turning mechanics at intersections, and collision-based game over system. Players must turn at the right time to avoid walls, or they lose the game.
 
 ## Files Created/Modified
 
@@ -10,16 +10,18 @@ Successfully implemented a maze runner game with automatic forward movement, lan
 
 **Key Features:**
 - **Auto-forward movement**: Player constantly moves forward at configurable speed
-- **Free horizontal movement**: Player can strafe left/right within a limited range
 - **Turn zone detection**: Player can turn 90 degrees when inside a turn zone trigger
-- **Smooth turning**: Configurable turn speed for instant or smooth rotation
+- **Smooth turning**: Configurable turn speed for instant or smooth rotation with instant speed pickup
+- **Wall collision detection**: Player loses if they hit a wall (turn too late or miss a turn)
 - **Jump mechanics**: Preserved existing jump functionality with gravity scaling
+- **Centered turning**: Ball automatically centers on z=47 during turns for smooth path transitions
 
 **Public Parameters:**
-- `forwardSpeed`: Speed of constant forward movement (default: 8)
-- `strafeSpeed`: Speed of left/right movement (default: 5)
-- `maxStrafeDistance`: Maximum distance player can move from center (default: 2)
-- `turnSpeed`: How fast the player rotates (default: 5)
+- `forwardSpeed`: Speed of constant forward movement (default: 16)
+- `turnSpeed`: How fast the player rotates during turns (default: 10)
+- `turnInputCooldown`: Prevent multiple turns in quick succession (default: 0.3)
+- `turnSpeedMultiplier`: Speed multiplier during turns (default: 1.0 = full speed)
+- `enableTurnAssist`: Helps guide ball during turns to avoid walls (default: true)
 - `jumpHeight`: Height of jumps (default: 10)
 - `gravityScale`: Fall speed multiplier (default: 1)
 
@@ -63,7 +65,20 @@ Successfully implemented a maze runner game with automatic forward movement, lan
 2. Select trigger type in Inspector
 3. Position at appropriate location in level
 
-### 4. GameManager.cs (New)
+### 4. Door.cs (New)
+**Location:** `Assets/Scripts/Door.cs`
+
+**Key Features:**
+- **Passable barriers**: Allows player to pass through doors without collision
+- **Auto-trigger setup**: Automatically sets collider as trigger on start
+- **Color identification**: Track which door (green/red) for debugging
+
+**Usage:**
+1. Add to door GameObjects in the scene
+2. Set doorColor to "Green" or "Red" in Inspector
+3. Ensure door has a Box Collider (will be auto-set to trigger)
+
+### 5. GameManager.cs (New)
 **Location:** `Assets/Scripts/GameManager.cs`
 
 **Key Features:**
@@ -88,19 +103,40 @@ Successfully implemented a maze runner game with automatic forward movement, lan
 ## Game Flow
 
 ```
-Player starts → Auto-forward movement
-    ↓
-Left/Right input → Strafe within path
+Player starts → Auto-forward movement at z=47
     ↓
 Enter Turn Zone (Cyan) → Can turn 90°
     ↓
-Press A or D → Rotate player and camera
+Press A or D → Rotate player and camera instantly
     ↓
-Choose path: Left or Right
+Ball centers at z=47 and maintains full speed
     ↓
+Choose path correctly OR Hit wall
+    ↓
+    ├─→ Turn too late → Hit Wall → Game Over UI
     ├─→ Left → Dead End (Red) → Game Over UI
+    ├─→ Right (through Green Door) → Continue
     └─→ Right → Goal (Green) → Level Complete UI
 ```
+
+## Collision System
+
+The game uses a sophisticated collision detection system:
+
+1. **Walls (Solid Colliders)**: 
+   - Have regular colliders (NOT triggers)
+   - Cause Game Over when player collides with them
+   - System filters out ground collisions (normal.y > 0.7)
+   
+2. **Doors (Triggers)**:
+   - Have colliders set as triggers
+   - Attach Door.cs script to make them passable
+   - Player can pass through freely
+   
+3. **Special Triggers**:
+   - Turn Zones: Allow turning
+   - Dead Ends: Trigger Game Over
+   - Goals: Trigger Level Complete
 
 ## Unity Editor Setup
 
@@ -206,9 +242,10 @@ The guide covers:
 
 | File | Type | Lines | Purpose |
 |------|------|-------|---------|
-| PlayerMovement.cs | Modified | 200 | Auto-run, strafe, turning |
+| PlayerMovement.cs | Modified | 350+ | Auto-run, turning, collision detection |
 | CameraFollow.cs | Modified | 75 | Follow player with rotation |
-| LevelTrigger.cs | New | 125 | Turn zones, goals, dead ends |
+| LevelTrigger.cs | New | 140 | Turn zones, goals, dead ends |
+| Door.cs | New | 35 | Make doors passable (triggers) |
 | GameManager.cs | New | 100 | Game state and UI management |
 | UNITY_SETUP_GUIDE.md | New | 600+ | Complete setup instructions |
 

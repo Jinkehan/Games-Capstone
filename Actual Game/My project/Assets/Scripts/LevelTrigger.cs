@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.IO;
 
 public class LevelTrigger : MonoBehaviour
 {
@@ -18,24 +19,6 @@ public class LevelTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // #region agent log
-        System.IO.File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", 
-            Newtonsoft.Json.JsonConvert.SerializeObject(new {
-                location = "LevelTrigger.cs:OnTriggerEnter",
-                message = "Trigger collision detected",
-                data = new {
-                    otherName = other.gameObject.name,
-                    otherTag = other.tag,
-                    hasPlayerTag = other.CompareTag("Player"),
-                    triggerType = triggerType.ToString(),
-                    triggerPosition = transform.position.ToString()
-                },
-                timestamp = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                sessionId = "debug-session",
-                hypothesisId = "B,C,D"
-            }) + "\n");
-        // #endregion
-        
         // Check if the player entered the trigger
         if (other.CompareTag("Player"))
         {
@@ -68,25 +51,16 @@ public class LevelTrigger : MonoBehaviour
     private void HandleTurnZoneEntry(Collider playerCollider)
     {
         // #region agent log
-        System.IO.File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", 
-            Newtonsoft.Json.JsonConvert.SerializeObject(new {
-                location = "LevelTrigger.cs:HandleTurnZoneEntry",
-                message = "HandleTurnZoneEntry called",
-                data = new {
-                    playerName = playerCollider.gameObject.name,
-                    hasPlayerMovement = playerCollider.GetComponent<PlayerMovement>() != null
-                },
-                timestamp = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                sessionId = "debug-session",
-                hypothesisId = "D"
-            }) + "\n");
+        File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"LevelTrigger.cs:52\",\"message\":\"TurnZone Entry\",\"data\":{{\"zoneName\":\"{gameObject.name}\",\"zonePosX\":{transform.position.x},\"zonePosZ\":{transform.position.z}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H1\"}}\n");
         // #endregion
         
         PlayerMovement playerMovement = playerCollider.GetComponent<PlayerMovement>();
         if (playerMovement != null)
         {
-            playerMovement.EnterTurnZone();
-            Debug.Log("🔵 TurnZone Trigger: Player entered - Press A (Left) or D (Right) to turn!");
+            // Pass the turn zone's center position to the player
+            Vector3 turnZoneCenter = transform.position;
+            playerMovement.EnterTurnZone(turnZoneCenter);
+            Debug.Log($"🔵 TurnZone Trigger: Player entered at position {turnZoneCenter} - Press A (Left) or D (Right) to turn!");
         }
         else
         {

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.IO;
 
 public class CameraFollow : MonoBehaviour
 {
@@ -7,9 +8,11 @@ public class CameraFollow : MonoBehaviour
     public float positionSmoothSpeed = 0.125f; // How smoothly the camera follows position
     public float rotationSmoothSpeed = 0.1f; // How smoothly the camera rotates with player
     public bool useLookAt = true; // Whether to look at the target or maintain offset-based rotation
+    public float instantRotationThreshold = 45f; // If player rotates more than this in one frame, camera snaps instantly
 
     private bool initialized = false;
     private Quaternion targetRotation;
+    private float lastPlayerRotationY = 0f;
 
     void Start()
     {
@@ -61,6 +64,17 @@ public class CameraFollow : MonoBehaviour
             initialized = true;
         }
 
+        // #region agent log
+        float currentPlayerRotY = target.rotation.eulerAngles.y;
+        float rotationDelta = Mathf.Abs(currentPlayerRotY - lastPlayerRotationY);
+        if (rotationDelta > 180f) rotationDelta = 360f - rotationDelta; // Handle wrap-around
+        bool playerTurnedInstantly = rotationDelta > instantRotationThreshold;
+        if (rotationDelta > 45f) {
+            File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"CameraFollow.cs:70\",\"message\":\"Player rotation changed significantly\",\"data\":{{\"playerRotY\":{currentPlayerRotY},\"lastPlayerRotY\":{lastPlayerRotationY},\"delta\":{rotationDelta},\"willSnapCamera\":{playerTurnedInstantly.ToString().ToLower()},\"cameraRotY\":{transform.rotation.eulerAngles.y},\"smoothSpeed\":{rotationSmoothSpeed}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H1\"}}\n");
+        }
+        lastPlayerRotationY = currentPlayerRotY;
+        // #endregion
+
         // Calculate desired position in world space by rotating offset by target's rotation
         Vector3 rotatedOffset = target.rotation * offset;
         Vector3 desiredPosition = target.position + rotatedOffset;
@@ -77,7 +91,23 @@ public class CameraFollow : MonoBehaviour
             if (directionToTarget != Vector3.zero)
             {
                 Quaternion lookRotation = Quaternion.LookRotation(directionToTarget);
-                transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSmoothSpeed);
+                
+                // #region agent log
+                float angleToTarget = Quaternion.Angle(transform.rotation, lookRotation);
+                if (angleToTarget > 5f) {
+                    File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"CameraFollow.cs:95\",\"message\":\"Camera rotating toward target\",\"data\":{{\"currentRotY\":{transform.rotation.eulerAngles.y},\"targetRotY\":{lookRotation.eulerAngles.y},\"angleDiff\":{angleToTarget},\"instantSnap\":{playerTurnedInstantly.ToString().ToLower()},\"useLookAt\":{useLookAt.ToString().ToLower()}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H2\"}}\n");
+                }
+                // #endregion
+                
+                // If player just did an instant 90-degree turn, snap camera instantly too
+                if (playerTurnedInstantly)
+                {
+                    transform.rotation = lookRotation;
+                }
+                else
+                {
+                    transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSmoothSpeed);
+                }
             }
         }
         else
@@ -88,7 +118,23 @@ public class CameraFollow : MonoBehaviour
             if (direction != Vector3.zero)
             {
                 targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSmoothSpeed);
+                
+                // #region agent log
+                float angleToTarget = Quaternion.Angle(transform.rotation, targetRotation);
+                if (angleToTarget > 5f) {
+                    File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"CameraFollow.cs:113\",\"message\":\"Camera rotating with offset\",\"data\":{{\"currentRotY\":{transform.rotation.eulerAngles.y},\"targetRotY\":{targetRotation.eulerAngles.y},\"angleDiff\":{angleToTarget},\"instantSnap\":{playerTurnedInstantly.ToString().ToLower()},\"useLookAt\":{useLookAt.ToString().ToLower()}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H4\"}}\n");
+                }
+                // #endregion
+                
+                // If player just did an instant 90-degree turn, snap camera instantly too
+                if (playerTurnedInstantly)
+                {
+                    transform.rotation = targetRotation;
+                }
+                else
+                {
+                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSmoothSpeed);
+                }
             }
         }
     }
