@@ -56,7 +56,7 @@ public class PlayerMovement : MonoBehaviour
         
         // Configure Rigidbody to prevent bouncing and shaking
         rb.constraints = RigidbodyConstraints.FreezeRotation; // Prevent the ball from rotating due to physics
-        rb.interpolation = RigidbodyInterpolation.Extrapolate; // Smoother visual movement (predicts next position)
+        rb.interpolation = RigidbodyInterpolation.Interpolate; // Smoother visual movement (interpolates between physics states)
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous; // Better collision detection at high speeds
         
         // Reduce bounciness and friction issues
@@ -133,9 +133,15 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        // Handle input and non-physics logic in Update
         CheckGround();
         HandleTurning();
-        
+        Jump();
+    }
+    
+    void FixedUpdate()
+    {
+        // Handle physics-based movement in FixedUpdate for proper physics simulation
         // Only move if not currently turning
         if (!isTurning)
         {
@@ -143,14 +149,22 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            // Keep ball at turn zone center while turning
+            // Keep ball at turn zone center while turning using physics-based positioning
             Vector3 correctedPosition = new Vector3(turnZoneCenter.x, 0.25f, turnZoneCenter.z);
-            transform.position = correctedPosition;
+            rb.MovePosition(correctedPosition); // Use MovePosition instead of directly setting transform.position
             rb.linearVelocity = Vector3.zero; // Stop movement during turn
         }
         
-        Jump();
         ApplyExtraGravity();
+        
+        // Prevent unwanted upward velocity when grounded (fixes collision-induced bounces)
+        // Use a very low threshold (0.01) to catch even tiny upward movements
+        if (isGrounded && rb.linearVelocity.y > 0.01f)
+        {
+            Vector3 vel = rb.linearVelocity;
+            vel.y = 0; // Zero out upward velocity when on ground
+            rb.linearVelocity = vel;
+        }
     }
     
     void LateUpdate()
@@ -431,6 +445,24 @@ public class PlayerMovement : MonoBehaviour
             {
                 isGroundCollision = true;
                 break;
+            }
+        }
+        
+        // If ground collision, prevent unwanted upward velocity and position changes immediately
+        // This fixes the "slow jump" bug when rolling across ground block seams
+        if (isGroundCollision && (rb.linearVelocity.y > 0.01f || transform.position.y > 0.65f))
+        {
+            // Zero out upward velocity
+            Vector3 vel = rb.linearVelocity;
+            vel.y = 0;
+            rb.linearVelocity = vel;
+            
+            // Also correct the position if it's too high (push ball back down to ground level)
+            if (transform.position.y > 0.65f)
+            {
+                Vector3 pos = transform.position;
+                pos.y = 0.625f; // Correct ground height (ball radius 0.5 + ground top 0.125)
+                rb.MovePosition(pos);
             }
         }
         
