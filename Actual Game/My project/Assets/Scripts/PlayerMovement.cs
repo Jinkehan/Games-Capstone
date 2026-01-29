@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.IO;
 
 /// <summary>
 /// Main player movement controller with auto-forward movement, turning, and collision detection
@@ -18,7 +17,7 @@ public class PlayerMovement : MonoBehaviour
     public float forwardSpeed = 16f; // Constant forward movement speed
     
     [Header("Turning Settings")]
-    public float turnSpeed = 40f; // Speed of rotation (higher = instant, lower = smooth) - MUST be very high for consecutive turn zones
+    public float turnDuration = 0.1f; // Duration of turn animation in seconds
     public float turnInputCooldown = 0.3f; // Prevent multiple turns in quick succession
     public float turnSpeedMultiplier = 1.0f; // Speed multiplier during turns (1.0 = full speed, no slowdown) - KEEP AT 1.0 for consistent speed
     public bool enableTurnAssist = true; // Helps guide the ball during turns to avoid walls
@@ -46,13 +45,10 @@ public class PlayerMovement : MonoBehaviour
     private Quaternion targetRotation;
     private bool isTurning = false;
     private float lastTurnTime = -999f; // Track when last turn happened
-    private float turnDirection = 0f; // -1 for left, 1 for right, 0 for no turn
-    private Vector3 turnStartPosition; // Position where turn started
     private Vector3 turnZoneCenter; // Center position of the current turn zone
     private bool justTurned = false; // Flag to prevent Move() from overriding velocity immediately after turn
-    private Vector3 cachedForward; // Cache forward direction after turn to avoid Unity transform lag
-    private bool useCachedForward = false; // Flag to use cached forward instead of transform.forward
-    private float lastPlayerRotationY = 0f; // Track rotation changes for debugging
+    private Vector3 pendingNewVelocity; // Velocity to apply after turn completes
+    private Coroutine turnCoroutine; // Reference to the turn coroutine
 
     void Start()
     {
@@ -137,37 +133,21 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        // #region agent log
-        float rotY = transform.rotation.eulerAngles.y;
-        if (Mathf.Abs(rotY - lastPlayerRotationY) > 45f && lastPlayerRotationY > 0) {
-            File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"PlayerMovement.cs:138\",\"message\":\"UPDATE START - rotation changed\",\"data\":{{\"oldRotY\":{lastPlayerRotationY},\"newRotY\":{rotY},\"velX\":{rb.linearVelocity.x},\"velZ\":{rb.linearVelocity.z},\"justTurned\":{justTurned.ToString().ToLower()}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H_ROT_FLICKER\"}}\n");
-        }
-        lastPlayerRotationY = rotY;
-        // #endregion
-        
         CheckGround();
-        
-        // #region agent log
-        float rotYBeforeTurn = transform.rotation.eulerAngles.y;
-        // #endregion
-        
         HandleTurning();
         
-        // #region agent log
-        float rotYAfterTurn = transform.rotation.eulerAngles.y;
-        if (Mathf.Abs(rotYAfterTurn - rotYBeforeTurn) > 45f) {
-            File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"PlayerMovement.cs:148\",\"message\":\"Rotation changed by HandleTurning\",\"data\":{{\"beforeTurnRotY\":{rotYBeforeTurn},\"afterTurnRotY\":{rotYAfterTurn},\"velX\":{rb.linearVelocity.x},\"velZ\":{rb.linearVelocity.z}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H_TURN_MOMENT\"}}\n");
+        // Only move if not currently turning
+        if (!isTurning)
+        {
+            Move();
         }
-        // #endregion
-        
-        Move();
-        
-        // #region agent log
-        float rotYAfter = transform.rotation.eulerAngles.y;
-        if (Mathf.Abs(rotYAfter - rotY) > 1f) {
-            File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"PlayerMovement.cs:162\",\"message\":\"UPDATE END - rotation changed during Update\",\"data\":{{\"startRotY\":{rotY},\"endRotY\":{rotYAfter},\"velX\":{rb.linearVelocity.x},\"velZ\":{rb.linearVelocity.z}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H_ROT_SOURCE\"}}\n");
+        else
+        {
+            // Keep ball at turn zone center while turning
+            Vector3 correctedPosition = new Vector3(turnZoneCenter.x, 0.25f, turnZoneCenter.z);
+            transform.position = correctedPosition;
+            rb.linearVelocity = Vector3.zero; // Stop movement during turn
         }
-        // #endregion
         
         Jump();
         ApplyExtraGravity();
@@ -175,7 +155,7 @@ public class PlayerMovement : MonoBehaviour
     
     void LateUpdate()
     {
-        // No longer needed - turns are instant and position is locked immediately
+        // No longer needed - rotation is handled in coroutine
     }
 
     void ApplyExtraGravity()
@@ -195,29 +175,17 @@ public class PlayerMovement : MonoBehaviour
         // Get input from either new or old input system
         Vector2 moveInput = GetMoveInput();
         
-        // #region agent log
-        if (isInTurnZone && Time.frameCount % 15 == 0) { File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"PlayerMovement.cs:150\",\"message\":\"In zone checking\",\"data\":{{\"moveInputX\":{moveInput.x},\"isInZone\":{isInTurnZone.ToString().ToLower()},\"cooldownReady\":{(Time.time > lastTurnTime + turnInputCooldown).ToString().ToLower()}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H_CAN_TURN\"}}\n"); }
-        // #endregion
-        
         // Check for turn input while in turn zone (only 1 turn allowed per zone)
         if (isInTurnZone && Time.time > lastTurnTime + turnInputCooldown)
         {
             // Lower threshold for easier turning
             if (moveInput.x < -0.5f)
             {
-                // #region agent log
-                File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"PlayerMovement.cs:159\",\"message\":\"LEFT TURN\",\"data\":{{\"moveInputX\":{moveInput.x}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H_TURN_INPUT\"}}\n");
-                // #endregion
-                
                 Debug.Log($"⬅️ Left turn input detected!");
                 InitiateTurn(-90f, -1f);
             }
             else if (moveInput.x > 0.5f)
             {
-                // #region agent log
-                File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"PlayerMovement.cs:171\",\"message\":\"RIGHT TURN\",\"data\":{{\"moveInputX\":{moveInput.x}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H_TURN_INPUT\"}}\n");
-                // #endregion
-                
                 Debug.Log($"➡️ Right turn input detected!");
                 InitiateTurn(90f, 1f);
             }
@@ -226,20 +194,21 @@ public class PlayerMovement : MonoBehaviour
 
     void InitiateTurn(float angle, float direction)
     {
+        // Prevent multiple turns
+        if (isTurning) return;
+        
         // Get current velocity to determine direction
         Vector3 currentVel = rb.linearVelocity;
-        Vector3 currentPos = transform.position;
-        
-        // #region agent log
-        File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"PlayerMovement.cs:245\",\"message\":\"InitiateTurn called\",\"data\":{{\"angle\":{angle},\"oldVelX\":{currentVel.x},\"oldVelZ\":{currentVel.z},\"posX\":{currentPos.x},\"posZ\":{currentPos.z},\"centerX\":{turnZoneCenter.x},\"centerZ\":{turnZoneCenter.z}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H_TURN_START\"}}\n");
-        // #endregion
         
         // STEP 1: Instantly snap position to turn zone center with corrected Y position
         // Ball is 1 unit tall (radius 0.5), ground top is at -0.25, so ball center should be at 0.25
         Vector3 correctedPosition = new Vector3(turnZoneCenter.x, 0.25f, turnZoneCenter.z);
         transform.position = correctedPosition;
         
-        // STEP 2: Calculate new velocity by rotating current velocity by 90 degrees
+        // STEP 2: Stop velocity immediately - ball stays at center
+        rb.linearVelocity = Vector3.zero;
+        
+        // STEP 3: Calculate new velocity by rotating current velocity by 90 degrees
         Vector3 newVel = Vector3.zero;
         
         if (direction < 0) // LEFT TURN
@@ -266,43 +235,86 @@ public class PlayerMovement : MonoBehaviour
         // Preserve Y velocity (vertical movement)
         newVel.y = currentVel.y;
         
-        // STEP 3: Apply new velocity instantly
-        rb.linearVelocity = newVel;
+        // Store the new velocity to apply after turn completes
+        pendingNewVelocity = newVel;
         
-        // STEP 4: Rotate transform to match velocity direction
+        // STEP 4: Calculate target rotation based on new velocity direction
         if (Mathf.Abs(newVel.x) > 0.1f)
         {
             // Moving along X axis
             if (newVel.x > 0)
-                transform.rotation = Quaternion.Euler(0, 90, 0); // Facing +X (right)
+                targetRotation = Quaternion.Euler(0, 90, 0); // Facing +X (right)
             else
-                transform.rotation = Quaternion.Euler(0, 270, 0); // Facing -X (left)
+                targetRotation = Quaternion.Euler(0, 270, 0); // Facing -X (left)
         }
         else if (Mathf.Abs(newVel.z) > 0.1f)
         {
             // Moving along Z axis
             if (newVel.z > 0)
-                transform.rotation = Quaternion.Euler(0, 0, 0); // Facing +Z (forward)
+                targetRotation = Quaternion.Euler(0, 0, 0); // Facing +Z (forward)
             else
-                transform.rotation = Quaternion.Euler(0, 180, 0); // Facing -Z (back)
+                targetRotation = Quaternion.Euler(0, 180, 0); // Facing -Z (back)
+        }
+        else
+        {
+            // Fallback: rotate by angle
+            targetRotation = transform.rotation * Quaternion.Euler(0, angle, 0);
         }
         
-        // #region agent log
-        File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"PlayerMovement.cs:295\",\"message\":\"Turn completed - Player rotated\",\"data\":{{\"newVelX\":{rb.linearVelocity.x},\"newVelZ\":{rb.linearVelocity.z},\"newRotY\":{transform.rotation.eulerAngles.y},\"forwardX\":{transform.forward.x},\"forwardZ\":{transform.forward.z},\"frameCount\":{Time.frameCount}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H3\"}}\n");
-        // #endregion
-        
-        // Mark that we just turned - prevents Move() from overriding velocity this frame
-        justTurned = true;
-        
-        // Mark that we're done turning
+        // Mark that we're turning
+        isTurning = true;
         isInTurnZone = false; // Only allow 1 turn per turn zone
         lastTurnTime = Time.time;
         
-        Debug.Log($"🔄 INSTANT Turn: direction={(direction < 0 ? "LEFT" : "RIGHT")}, newVel=({newVel.x}, {newVel.z}), rotation={transform.rotation.eulerAngles.y}°, pos={transform.position}");
+        // Start the turn coroutine
+        if (turnCoroutine != null)
+        {
+            StopCoroutine(turnCoroutine);
+        }
+        turnCoroutine = StartCoroutine(CompleteTurn());
+        
+        Debug.Log($"🔄 Starting Turn: direction={(direction < 0 ? "LEFT" : "RIGHT")}, newVel=({newVel.x}, {newVel.z}), targetRotation={targetRotation.eulerAngles.y}°, pos={transform.position}");
+    }
+    
+    private System.Collections.IEnumerator CompleteTurn()
+    {
+        // Store starting rotation
+        Quaternion startRotation = transform.rotation;
+        float elapsedTime = 0f;
+        
+        // Smoothly rotate over turn duration
+        while (elapsedTime < turnDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / turnDuration;
+            
+            // Smooth interpolation (easing can be adjusted if needed)
+            transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+            
+            yield return null; // Wait for next frame
+        }
+        
+        // Ensure rotation is exactly at target
+        transform.rotation = targetRotation;
+        
+        // Apply the new velocity
+        rb.linearVelocity = pendingNewVelocity;
+        
+        // Mark that we're done turning
+        isTurning = false;
+        justTurned = true; // Prevent Move() from overriding velocity this frame
+        
+        Debug.Log($"✅ Turn Complete: newVel=({pendingNewVelocity.x}, {pendingNewVelocity.z}), rotation={transform.rotation.eulerAngles.y}°");
     }
 
     void Move()
     {
+        // Don't move while turning
+        if (isTurning)
+        {
+            return;
+        }
+        
         // Skip velocity adjustment if we just turned (prevents Move from overriding turn velocity)
         if (justTurned)
         {
@@ -377,10 +389,6 @@ public class PlayerMovement : MonoBehaviour
     // Called by TurnZone triggers
     public void EnterTurnZone(Vector3 zoneCenter)
     {
-        // #region agent log
-        File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"PlayerMovement.cs:326\",\"message\":\"EnterTurnZone\",\"data\":{{\"zoneCenterX\":{zoneCenter.x},\"zoneCenterZ\":{zoneCenter.z},\"isTurning\":{isTurning.ToString().ToLower()},\"turnAngle\":{Quaternion.Angle(transform.rotation, targetRotation)}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H_STILL_TURNING\"}}\n");
-        // #endregion
-        
         isInTurnZone = true;
         turnZoneCenter = zoneCenter;
         Debug.Log($"✅ EnterTurnZone called: zoneCenter={zoneCenter}, playerPos={transform.position}, playerForward={transform.forward}");
@@ -392,6 +400,20 @@ public class PlayerMovement : MonoBehaviour
         {
             isInTurnZone = false;
         }
+    }
+    
+    void OnDisable()
+    {
+        // Stop any ongoing turn coroutine
+        if (turnCoroutine != null)
+        {
+            StopCoroutine(turnCoroutine);
+            turnCoroutine = null;
+        }
+        
+        // Disable actions when the script is disabled
+        moveAction?.Disable();
+        jumpAction?.Disable();
     }
 
     void OnCollisionEnter(Collision collision)
@@ -427,11 +449,5 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void OnDisable()
-    {
-        // Disable actions when the script is disabled
-        moveAction?.Disable();
-        jumpAction?.Disable();
-    }
 }
 

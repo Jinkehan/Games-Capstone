@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.IO;
 
 public class LevelTrigger : MonoBehaviour
 {
@@ -50,10 +49,6 @@ public class LevelTrigger : MonoBehaviour
 
     private void HandleTurnZoneEntry(Collider playerCollider)
     {
-        // #region agent log
-        File.AppendAllText("/Users/kehanjin/Desktop/Programming/Games-Capstone/Actual Game/.cursor/debug.log", $"{{\"location\":\"LevelTrigger.cs:52\",\"message\":\"TurnZone Entry\",\"data\":{{\"zoneName\":\"{gameObject.name}\",\"zonePosX\":{transform.position.x},\"zonePosZ\":{transform.position.z}}},\"timestamp\":{System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()},\"sessionId\":\"debug-session\",\"hypothesisId\":\"H1\"}}\n");
-        // #endregion
-        
         PlayerMovement playerMovement = playerCollider.GetComponent<PlayerMovement>();
         if (playerMovement != null)
         {

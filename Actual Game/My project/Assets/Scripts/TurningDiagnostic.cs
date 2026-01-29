@@ -156,7 +156,7 @@ public class TurningDiagnostic : MonoBehaviour
         
         // Movement parameters
         sb.AppendLine($"\n⚙️  Forward Speed: {playerMovement.forwardSpeed}");
-        sb.AppendLine($"⚙️  Turn Speed: {playerMovement.turnSpeed}");
+        sb.AppendLine($"⚙️  Turn Duration: {playerMovement.turnDuration}");
         sb.AppendLine($"⚙️  Turn Cooldown: {playerMovement.turnInputCooldown}");
         
         sb.AppendLine("\n═══════════════════════════════════");

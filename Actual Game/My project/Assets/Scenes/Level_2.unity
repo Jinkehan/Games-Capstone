@@ -353,7 +353,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 27.75, y: -0.5, z: -15}
-  m_LocalScale: {x: 0.5, y: 10, z: 5}
+  m_LocalScale: {x: 0.5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -656,7 +656,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   forwardSpeed: 20
-  turnSpeed: 5
+  turnDuration: 0.1
   turnInputCooldown: 0.3
   turnSpeedMultiplier: 1
   enableTurnAssist: 1
@@ -1100,7 +1100,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -27.75, y: -0.5, z: 15}
-  m_LocalScale: {x: 0.5, y: 10, z: 55}
+  m_LocalScale: {x: 0.5, y: 5, z: 55}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1227,7 +1227,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2.25, y: -0.5, z: -15}
-  m_LocalScale: {x: 0.5, y: 10, z: 5}
+  m_LocalScale: {x: 0.5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1476,7 +1476,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 45, y: -0.5, z: -17.25}
-  m_LocalScale: {x: 25, y: 10, z: 0.5}
+  m_LocalScale: {x: 25, y: 5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1764,7 +1764,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 30, y: -0.5, z: -17.25}
-  m_LocalScale: {x: 5, y: 10, z: 0.5}
+  m_LocalScale: {x: 5, y: 5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2113,7 +2113,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 45, y: -0.5, z: -12.75}
-  m_LocalScale: {x: 25, y: 10, z: 0.5}
+  m_LocalScale: {x: 25, y: 5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2225,7 +2225,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -15, y: -0.5, z: 42.75}
-  m_LocalScale: {x: 25, y: 10, z: 0.5}
+  m_LocalScale: {x: 25, y: 5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2337,7 +2337,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 57.75, y: -0.5, z: 1.25}
-  m_LocalScale: {x: 0.5, y: 10, z: 27.5}
+  m_LocalScale: {x: 0.5, y: 5, z: 27.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2561,7 +2561,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 62.25, y: -0.5, z: -15}
-  m_LocalScale: {x: 0.5, y: 10, z: 60}
+  m_LocalScale: {x: 0.5, y: 5, z: 60}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2792,7 +2792,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 60, y: -0.5, z: -45}
-  m_LocalScale: {x: 5, y: 10, z: 0.5}
+  m_LocalScale: {x: 5, y: 5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2919,7 +2919,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 32.25, y: -0.5, z: 45}
-  m_LocalScale: {x: 0.5, y: 10, z: 5}
+  m_LocalScale: {x: 0.5, y: 5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -3179,8 +3179,8 @@ Transform:
   m_GameObject: {fileID: 954297872}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 60, y: -0.25, z: 15}
-  m_LocalScale: {x: 5, y: 10, z: 0.5}
+  m_LocalPosition: {x: 60, y: -0.5, z: 15}
+  m_LocalScale: {x: 5, y: 5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -3336,11 +3336,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraFollow
   target: {fileID: 259821886}
-  offset: {x: 0, y: 20, z: -30}
+  offset: {x: 0, y: 15, z: -35}
   positionSmoothSpeed: 0.125
   rotationSmoothSpeed: 0.1
   useLookAt: 1
   instantRotationThreshold: 45
+  verticalBias: 4
 --- !u!1 &1114982953
 GameObject:
   m_ObjectHideFlags: 0
@@ -3602,7 +3603,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1389966415}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: QuitGame
+        m_MethodName: LoadNextLevel
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3768,7 +3769,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2.25, y: -0.5, z: 15}
-  m_LocalScale: {x: 0.5, y: 10, z: 55}
+  m_LocalScale: {x: 0.5, y: 5, z: 55}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -3880,7 +3881,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0.5, z: 47.25}
-  m_LocalScale: {x: 65, y: 10, z: 0.5}
+  m_LocalScale: {x: 65, y: 5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -4109,7 +4110,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -32.25, y: -0.5, z: 15}
-  m_LocalScale: {x: 0.5, y: 10, z: 65}
+  m_LocalScale: {x: 0.5, y: 5, z: 65}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -4480,7 +4481,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 32.25, y: -0.5, z: 15}
-  m_LocalScale: {x: 0.5, y: 10, z: 55}
+  m_LocalScale: {x: 0.5, y: 5, z: 55}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -4592,7 +4593,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 15, y: -0.5, z: 42.75}
-  m_LocalScale: {x: 25, y: 10, z: 0.5}
+  m_LocalScale: {x: 25, y: 5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -4816,7 +4817,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -15, y: -0.5, z: -12.75}
-  m_LocalScale: {x: 25, y: 10, z: 0.5}
+  m_LocalScale: {x: 25, y: 5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -4928,7 +4929,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 57.75, y: -0.5, z: -31.25}
-  m_LocalScale: {x: 0.5, y: 10, z: 27.5}
+  m_LocalScale: {x: 0.5, y: 5, z: 27.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -5108,7 +5109,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2.25, y: -0.5, z: 15}
-  m_LocalScale: {x: 0.5, y: 10, z: 55}
+  m_LocalScale: {x: 0.5, y: 5, z: 55}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -5469,7 +5470,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 27.75, y: -0.5, z: 15}
-  m_LocalScale: {x: 0.5, y: 10, z: 55}
+  m_LocalScale: {x: 0.5, y: 5, z: 55}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -5717,7 +5718,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -15, y: -0.5, z: -17.25}
-  m_LocalScale: {x: 35, y: 10, z: 0.5}
+  m_LocalScale: {x: 35, y: 5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -5955,26 +5956,26 @@ SceneRoots:
   - {fileID: 604712594}
   - {fileID: 259821886}
   - {fileID: 1843909123}
+  - {fileID: 1659242035}
+  - {fileID: 1439832758}
+  - {fileID: 2105325845}
+  - {fileID: 2129062454}
+  - {fileID: 857968651}
+  - {fileID: 682124}
   - {fileID: 1418316183}
   - {fileID: 290145926}
-  - {fileID: 1659242035}
   - {fileID: 1787112609}
   - {fileID: 1300141356}
-  - {fileID: 1439832758}
   - {fileID: 1918974625}
   - {fileID: 1497357434}
-  - {fileID: 2105325845}
   - {fileID: 872575709}
   - {fileID: 850602184}
   - {fileID: 1774826969}
-  - {fileID: 2129062454}
   - {fileID: 1374350244}
   - {fileID: 820869533}
   - {fileID: 1623122119}
-  - {fileID: 857968651}
   - {fileID: 1668301530}
   - {fileID: 2054508255}
-  - {fileID: 682124}
   - {fileID: 317218166}
   - {fileID: 711356240}
   - {fileID: 937601745}
